@@ -1,14 +1,7 @@
-(import
-  (
-    let
-      lock = builtins.fromJSON (builtins.readFile ./flake.lock);
-    in
-      fetchTarball (with lock.nodes.flake-compat.locked; {
-        url = "https://github.com/${owner}/${repo}/archive/${rev}.tar.gz";
-        sha256 = narHash;
-      })
-  )
-  {
-    src = ./.;
-  })
-.defaultNix
+{pkgs, ...}: {
+  urlPart = pkgs.callPackage ./url-part.nix {};
+  artifactPath = pkgs.callPackage ./artifact-path.nix {};
+  mkDepsLink = pkgs.callPackage ./mk-deps-link.nix {};
+  findImportMap =
+    pkgs.callPackage ./find-import-map.nix {};
+}

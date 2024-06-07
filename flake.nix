@@ -1,89 +1,62 @@
 {
-  # main
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-  };
-
-  # dev
-  inputs = {
-    devshell = {
-      url = "github:numtide/devshell";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-utils.follows = "flake-utils";
-    };
-    flake-utils.url = "github:numtide/flake-utils";
-    flake-compat = {
-      url = "github:edolstra/flake-compat";
-      flake = false;
-    };
-  };
+  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
   outputs = {
     self,
     nixpkgs,
-    flake-utils,
     ...
-  } @ inputs:
-    {
-      overlays.default = import ./nix/overlay.nix;
-    }
-    // flake-utils.lib.eachSystem [
+  }: let
+    supportedSystems = [
       "x86_64-linux"
       "aarch64-linux"
+
       "x86_64-darwin"
       "aarch64-darwin"
-    ]
-    (
-      system: let
-        inherit (pkgs) deno2nix;
-        pkgs = import nixpkgs {
-          inherit system;
-          overlays = with inputs; [
-            self.overlays.default
-            devshell.overlay
-          ];
-        };
-      in {
-        /*
-        TODO: It can't but I don't why
-        packages = flake-utils.lib.flattenTree {
-           simple = {
-             deps-link = pkgs.callPackage ./examples/simple/deps-link.nix {};
-             executable = pkgs.callPackage ./examples/simple/executable.nix {};
-           };
-        };
-        */
-        packages = {
-          "simple/deps-link" = pkgs.callPackage ./examples/simple/deps-link.nix {};
-          "simple/bundled" = pkgs.callPackage ./examples/simple/bundled.nix {};
-          "simple/bundled-wrapper" = pkgs.callPackage ./examples/simple/bundled-wrapper.nix {};
-          "simple/executable" = pkgs.callPackage ./examples/simple/executable.nix {};
-          "simple-no-importmap/executable" = pkgs.callPackage ./examples/simple-no-importmap/executable.nix {};
-        };
-        apps = {
-          "simple-no-importmap/executable" = flake-utils.lib.mkApp {
-            drv = self.packages.${system}."simple/executable";
-            name = "simple";
-          };
-          "simple/executable" = flake-utils.lib.mkApp {
-            drv = self.packages.${system}."simple/executable";
-            name = "simple";
-          };
-          "simple/bundled-wrapper" = flake-utils.lib.mkApp {
-            drv = self.packages.${system}."simple/bundled-wrapper";
-            name = "simple";
-          };
-        };
+    ];
+    forEachSupportedSystem = nixpkgs.lib.genAttrs supportedSystems;
+    pkgsFor = system:
+      import nixpkgs {
+        inherit system;
+        overlays = [self.outputs.overlays.default];
+      };
+  in {
+    overlays.default = final: prev: {
+      deno2nix = {
+        mkBundled = final.callPackage ./nix/mk-bundled.nix {};
+        mkBundledWrapper = final.callPackage ./nix/mk-bundled-wrapper.nix {};
+        # mkExecutable = final.callPackage ./nix/mk-executable.nix {};
 
-        checks = self.packages.${system};
-        devShells.default = pkgs.devshell.mkShell {
-          packages = with pkgs; [
-            alejandra
-            deno
-            treefmt
-            taplo-cli
-          ];
-        };
-      }
-    );
+        internal = final.callPackage ./nix/internal {};
+      };
+    };
+
+    checks = forEachSupportedSystem (system: let
+      pkgs = pkgsFor system;
+    in {
+      "simple/deps-link" = pkgs.callPackage ./examples/simple/deps-link.nix {};
+      "simple/bundled" = pkgs.callPackage ./examples/simple/bundled.nix {};
+      "simple/bundled-wrapper" = pkgs.callPackage ./examples/simple/bundled-wrapper.nix {};
+
+      # TODO: these (executables) cannot work since `deno compile` fetches a
+      # "denort" binary from the internet at compile time with no way to fetch
+      # this through nix and tell deno to use what you've already downloaded
+      # "simple/executable" = pkgs.callPackage ./examples/simple/executable.nix {};
+      # "simple-no-importmap/executable" = pkgs.callPackage ./examples/simple-no-importmap/executable.nix {};
+    });
+
+    devShells = forEachSupportedSystem (system: let
+      pkgs = pkgsFor system;
+    in {
+      deno2nix = pkgs.mkShell {
+        buildInputs = with pkgs; [
+          alejandra
+          deno
+          treefmt
+          taplo-cli
+        ];
+      };
+
+      default = self.outputs.devShells.${system}.deno2nix;
+    });
+  };
 }
