@@ -1,10 +1,10 @@
 {deno2nix}:
 deno2nix.mkBundledWrapper {
-  pname = "simple-bundled";
+  pname = "simple-no-importmap-bundled";
   version = "0.1.0";
 
   src = ./.;
-  bin = "simple";
+  bin = "simple-no-importmap";
 
   entrypoint = "./mod.ts";
   lockfile = "./deno.lock";

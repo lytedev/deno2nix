@@ -1,10 +1,10 @@
 {deno2nix}:
 deno2nix.mkExecutable {
-  pname = "simple-executable";
+  pname = "simple-no-importmap-executable";
   version = "0.1.0";
 
   src = ./.;
-  bin = "simple";
+  bin = "simple-no-importmap";
 
   entrypoint = "./mod.ts";
   lockfile = "./deno.lock";

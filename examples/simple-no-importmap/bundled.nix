@@ -1,6 +1,6 @@
 {deno2nix}:
 deno2nix.mkBundled {
-  pname = "simple-bundled";
+  pname = "simple-no-importmap-bundled";
   version = "0.1.0";
 
   src = ./.;
