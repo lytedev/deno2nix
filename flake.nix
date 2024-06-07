@@ -58,8 +58,13 @@
           "simple/bundled" = pkgs.callPackage ./examples/simple/bundled.nix {};
           "simple/bundled-wrapper" = pkgs.callPackage ./examples/simple/bundled-wrapper.nix {};
           "simple/executable" = pkgs.callPackage ./examples/simple/executable.nix {};
+          "simple-no-importmap/executable" = pkgs.callPackage ./examples/simple-no-importmap/executable.nix {};
         };
         apps = {
+          "simple-no-importmap/executable" = flake-utils.lib.mkApp {
+            drv = self.packages.${system}."simple/executable";
+            name = "simple";
+          };
           "simple/executable" = flake-utils.lib.mkApp {
             drv = self.packages.${system}."simple/executable";
             name = "simple";

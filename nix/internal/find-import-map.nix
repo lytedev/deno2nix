@@ -1,10 +1,8 @@
-{lib, ...}: let
-  inherit (lib) importJSON;
+{lib}: {
+  src,
+  config,
+  importMap,
+}: let
+  fallback = {importMap ? null, ...}: importMap;
 in
-  {
-    src,
-    config,
-    importMap,
-  }:
-  # TODO: if importMap is exists, fallback
-  ((importJSON (src + "/${config}")).importMap)
+  fallback (lib.importJSON (src + "/${config}"))
