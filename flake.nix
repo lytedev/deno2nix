@@ -24,7 +24,7 @@
       deno2nix = {
         mkBundled = final.callPackage ./nix/mk-bundled.nix {};
         mkBundledWrapper = final.callPackage ./nix/mk-bundled-wrapper.nix {};
-        # mkExecutable = final.callPackage ./nix/mk-executable.nix {};
+        mkExecutable = final.callPackage ./nix/mk-executable.nix {};
 
         internal = final.callPackage ./nix/internal {};
       };
@@ -37,11 +37,8 @@
       "simple/bundled" = pkgs.callPackage ./examples/simple/bundled.nix {};
       "simple/bundled-wrapper" = pkgs.callPackage ./examples/simple/bundled-wrapper.nix {};
 
-      # TODO: these (executables) cannot work since `deno compile` fetches a
-      # "denort" binary from the internet at compile time with no way to fetch
-      # this through nix and tell deno to use what you've already downloaded
-      # "simple/executable" = pkgs.callPackage ./examples/simple/executable.nix {};
-      # "simple-no-importmap/executable" = pkgs.callPackage ./examples/simple-no-importmap/executable.nix {};
+      "simple/executable" = pkgs.callPackage ./examples/simple/executable.nix {};
+      "simple-no-importmap/executable" = pkgs.callPackage ./examples/simple-no-importmap/executable.nix {};
     });
 
     devShells = forEachSupportedSystem (system: let

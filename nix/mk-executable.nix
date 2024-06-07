@@ -3,6 +3,7 @@
   lib,
   stdenv,
   deno2nix,
+  deno,
   ...
 }: {
   pname,
@@ -16,7 +17,7 @@
   additionalDenoFlags ? "",
 } @ inputs: let
   inherit (builtins) isString;
-  inherit (lib) importJSON concatStringsSep;
+  inherit (lib) concatStringsSep;
   inherit (deno2nix.internal) mkDepsLink findImportMap;
 
   allowflag = flag: (
@@ -31,7 +32,7 @@
 
   compileCmd = concatStringsSep " " (
     [
-      "deno compile --cached-only"
+      "${deno}/bin/deno compile --cached-only"
       "--lock=${lockfile}"
       "--output=${bin}"
       # "--config=${config}"
@@ -57,6 +58,9 @@ in
   stdenv.mkDerivation {
     inherit pname version src;
     dontFixup = true;
+
+    # TODO: depending on the overridden deno version, this may break stuff?
+    DENORT_BIN = "${deno}/bin/denort";
 
     buildInputs = with pkgs; [deno jq];
     buildPhase = ''
