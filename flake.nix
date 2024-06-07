@@ -30,16 +30,18 @@
       };
     };
 
-    checks = forEachSupportedSystem (system: let
+    packages = forEachSupportedSystem (system: let
       pkgs = pkgsFor system;
     in {
-      "simple/deps-link" = pkgs.callPackage ./examples/simple/deps-link.nix {};
-      "simple/bundled" = pkgs.callPackage ./examples/simple/bundled.nix {};
-      "simple/bundled-wrapper" = pkgs.callPackage ./examples/simple/bundled-wrapper.nix {};
+      simple-deps-link = pkgs.callPackage ./examples/simple/deps-link.nix {};
+      simple-bundled = pkgs.callPackage ./examples/simple/bundled.nix {};
+      simple-bundled-wrapper = pkgs.callPackage ./examples/simple/bundled-wrapper.nix {};
 
-      "simple/executable" = pkgs.callPackage ./examples/simple/executable.nix {};
-      "simple-no-importmap/executable" = pkgs.callPackage ./examples/simple-no-importmap/executable.nix {};
+      simple-executable = pkgs.callPackage ./examples/simple/executable.nix {};
+      simple-no-importmap-executable = pkgs.callPackage ./examples/simple-no-importmap/executable.nix {};
     });
+
+    checks = self.outputs.packages;
 
     devShells = forEachSupportedSystem (system: let
       pkgs = pkgsFor system;

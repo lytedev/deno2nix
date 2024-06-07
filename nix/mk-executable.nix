@@ -42,6 +42,9 @@
       then ["--import-map=${importMap}"]
       else []
     )
+    # TODO: allowflag seems borked
+    # `allow.all = true` seems to have no effect while
+    # `additionalDenoFlags = "--allow-all"` works as expected
     ++ (allowflag "all")
     ++ (allowflag "env")
     ++ (allowflag "ffi")
